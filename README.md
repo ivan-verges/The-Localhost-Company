@@ -147,26 +147,36 @@ Para que los contenedores puedan comunicarse con Ollama en tu máquina anfitrion
 OLLAMA_HOST=0.0.0.0:11434 ollama serve
 ```
 
-Descarga los modelos recomendados:
+Descarga los modelos que desees utilizar (o define tus preferencias en `.env`):
 
 ```bash
-# Modelo principal de razonamiento y código
+# Modelo principal de razonamiento y código (CEO, Dev y QA)
 ollama pull hermes3:8b
 
 # Modelo para el analista de negocios (Gemma 4):
 ollama pull gemma4:e4b
-ollama cp gemma4:e4b gemma:e4b
 
 # O para equipos de 8 GB de RAM (modelo ligero):
 ollama pull gemma4:e2b
-ollama cp gemma4:e2b gemma:e4b
 
-# En Apple Silicon (M1-M6) para optimización extrema de memoria/batería:
-ollama pull gemma4:e4b-mlx && ollama cp gemma4:e4b-mlx gemma:e4b
-ollama pull gemma4:e2b-mlx && ollama cp gemma4:e2b-mlx gemma:e4b
+# En Apple Silicon (M1-M6) para optimización de memoria unificada:
+ollama pull gemma4:e4b-mlx
+# o: ollama pull gemma4:e2b-mlx
 ```
 
-_(Si prefieres Qwen o Llama en equipos con 8 GB de RAM o menos, también puedes usar `ollama pull qwen2.5-coder:3b` o `ollama pull llama3.2:3b`)._
+#### Configurar `.env` (Sin necesidad de modificar código ni compose files)
+Crea o edita el archivo `.env` en la raíz (puedes basarte en `.env.example`):
+
+```dotenv
+OLLAMA_BASE_URL=http://host.containers.internal:11434/v1
+OLLAMA_API_BASE=http://host.containers.internal:11434
+
+CEO_MODEL=hermes3:8b
+ANALYST_MODEL=gemma4:e4b     # O usa gemma4:e2b, gemma4:e4b-mlx, etc.
+DEV_MODEL=hermes3:8b
+QA_MODEL=hermes3:8b
+```
+¡Listo! No necesitas ejecutar `ollama cp` ni crear alias, ni modificar archivos YAML o de Python. Todos los contenedores leen automáticamente las variables del archivo `.env`.
 
 ---
 

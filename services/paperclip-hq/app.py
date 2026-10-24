@@ -40,10 +40,23 @@ STATE: Dict[str, Any] = {
 
 
 def load_company_config() -> Dict[str, Any]:
+    cfg: Dict[str, Any] = {}
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    return {}
+            cfg = yaml.safe_load(f) or {}
+
+    # Allow environment variables from .env to override company.yaml values directly
+    roles = cfg.setdefault("roles", {})
+    if os.environ.get("CEO_MODEL"):
+        roles.setdefault("ceo", {})["model"] = os.environ["CEO_MODEL"]
+    if os.environ.get("ANALYST_MODEL"):
+        roles.setdefault("business_analyst", {})["model"] = os.environ["ANALYST_MODEL"]
+    if os.environ.get("DEV_MODEL"):
+        roles.setdefault("developer", {})["model"] = os.environ["DEV_MODEL"]
+    if os.environ.get("QA_MODEL"):
+        roles.setdefault("qa_engineer", {})["model"] = os.environ["QA_MODEL"]
+
+    return cfg
 
 
 def log_event(role: str, stage: str, message: str, details: Optional[str] = None, level: str = "info") -> None:
@@ -139,6 +152,7 @@ async def run_company_workflow(project: str, directive: str, start_at_qa: bool =
     analyst_endpoint = roles.get("business_analyst", {}).get("endpoint", "http://analyst-openclaw:4000")
     dev_endpoint = roles.get("developer", {}).get("endpoint", "http://dev-hermes:8000")
     qa_endpoint = roles.get("qa_engineer", {}).get("endpoint", "http://qa-hermes:8000")
+    ba_model = roles.get("business_analyst", {}).get("model", "gemma4:e4b")
 
     async with httpx.AsyncClient(timeout=180.0) as client:
         if not start_at_qa:
@@ -147,7 +161,7 @@ async def run_company_workflow(project: str, directive: str, start_at_qa: bool =
             log_event(
                 "ceo",
                 "1_ANALYSIS",
-                f"Directiva recibida de la Junta Directiva para '{project}'. Delegando análisis a OpenClaw (Business Analyst - gemma:e4b)...",
+                f"Directiva recibida de la Junta Directiva para '{project}'. Delegando análisis a OpenClaw (Business Analyst - {ba_model})...",
                 directive,
             )
 

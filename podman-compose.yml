@@ -8,8 +8,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - OLLAMA_BASE_URL=http://host.containers.internal:11434/v1
-      - DEFAULT_MODEL=hermes3:8b
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.containers.internal:11434/v1}
+      - DEFAULT_MODEL=${CEO_MODEL:-hermes3:8b}
+      - CEO_MODEL=${CEO_MODEL:-hermes3:8b}
+      - ANALYST_MODEL=${ANALYST_MODEL:-gemma4:e4b}
+      - DEV_MODEL=${DEV_MODEL:-hermes3:8b}
+      - QA_MODEL=${QA_MODEL:-hermes3:8b}
       - COMPANY_CONFIG=/app/config/company.yaml
     volumes:
       - ./config:/app/config:Z
@@ -20,7 +24,7 @@ services:
     extra_hosts:
       - "host.containers.internal:host-gateway"
 
-  # 2. Agente Analista de Negocios (OpenClaw con gemma:e4b)
+  # 2. Agente Analista de Negocios (OpenClaw)
   analyst-openclaw:
     image: openclaw/openclaw:latest
     build:
@@ -30,8 +34,8 @@ services:
       - "4000:4000"
     environment:
       - LLM_PROVIDER=ollama
-      - OLLAMA_API_BASE=http://host.containers.internal:11434
-      - MODEL_NAME=gemma:e4b
+      - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.containers.internal:11434}
+      - MODEL_NAME=${ANALYST_MODEL:-gemma4:e4b}
       - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
       - AGENT_ROLE=business_analyst
     volumes:
@@ -41,7 +45,7 @@ services:
     extra_hosts:
       - "host.containers.internal:host-gateway"
 
-  # 3. Agente Desarrollador (Hermes Agent con hermes3:8b)
+  # 3. Agente Desarrollador (Hermes Agent)
   dev-hermes:
     image: nousresearch/hermes-agent:latest
     build:
@@ -50,9 +54,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - OPENAI_BASE_URL=http://host.containers.internal:11434/v1
+      - OPENAI_BASE_URL=${OLLAMA_BASE_URL:-http://host.containers.internal:11434/v1}
       - OPENAI_API_KEY=ollama-local
-      - HERMES_MODEL=hermes3:8b
+      - HERMES_MODEL=${DEV_MODEL:-hermes3:8b}
       - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
       - AGENT_ROLE=developer
       - MCP_FILESYSTEM_ROOT=/workspace
@@ -80,9 +84,9 @@ services:
       context: ./services/hermes-agent
     container_name: localhost-qa
     environment:
-      - OPENAI_BASE_URL=http://host.containers.internal:11434/v1
+      - OPENAI_BASE_URL=${OLLAMA_BASE_URL:-http://host.containers.internal:11434/v1}
       - OPENAI_API_KEY=ollama-local
-      - HERMES_MODEL=hermes3:8b
+      - HERMES_MODEL=${QA_MODEL:-hermes3:8b}
       - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
       - AGENT_ROLE=qa_engineer
       - MCP_SSE_URL=http://playwright-mcp:8931/sse
