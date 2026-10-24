@@ -84,10 +84,10 @@ flowchart TD
   - **CPU (Fallback)**: Procesadores Intel / AMD modernos con instrucciones AVX2 (funciona, pero con tiempos de respuesta más altos).
 
 ### Software Requerido
-1. **Docker con Docker Compose** (o **Podman con Podman Compose**):
-   - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) o [OrbStack](https://orbstack.dev/) o `podman`.
-   - Linux: `docker` y `docker-compose-plugin` (o `podman` y `podman-compose`).
-   - Windows: Docker Desktop con backend **WSL2** activado.
+1. **[Docker](https://www.docker.com/) con Docker Compose** (o **[Podman](https://podman.io/) con [Podman Compose](https://github.com/containers/podman-compose)**):
+   - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) o [OrbStack](https://orbstack.dev/) o [Podman Desktop / CLI](https://podman.io/).
+   - Linux: [Docker Engine](https://docs.docker.com/engine/install/) con `docker-compose-plugin` (o [Podman](https://podman.io/) y [podman-compose](https://github.com/containers/podman-compose)).
+   - Windows: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (o [Podman Desktop](https://podman-desktop.io/)) con backend [WSL2](https://learn.microsoft.com/windows/wsl/install) activado.
 2. **Ollama**:
    - Descargar e instalar desde [ollama.com](https://ollama.com/).
 3. **Herramientas de línea de comandos**:
