@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi uvicorn httpx pyyaml pydantic
+
+COPY app.py /app/app.py
+COPY static /app/static
+
+EXPOSE 3000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "3000"]

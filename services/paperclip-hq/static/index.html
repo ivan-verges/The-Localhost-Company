@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paperclip HQ — The Localhost Company (OpenHUB 2026)</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #131b2e;
+      --panel-alt: #1b253d;
+      --border: #2a395c;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+    main {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    h2, h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    .stages {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .stage-box {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+    }
+    .stage-box.in_progress {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    .stage-box.completed {
+      border-color: var(--success);
+    }
+    .stage-box.failed {
+      border-color: var(--danger);
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0d1424;
+      color: var(--text);
+      font-family: inherit;
+      margin-bottom: 10px;
+    }
+    button {
+      cursor: pointer;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      color: #0b0f19;
+      background: var(--accent);
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.9; }
+    button.warning { background: var(--warning); }
+    button.success { background: var(--success); }
+    .logs {
+      max-height: 440px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .log-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #0d1424;
+      border-left: 4px solid var(--accent);
+      font-size: 13.5px;
+    }
+    .log-item.success { border-left-color: var(--success); }
+    .log-item.warning { border-left-color: var(--warning); }
+    .log-item.error { border-left-color: var(--danger); }
+    pre {
+      background: #090d16;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin: 6px 0 0 0;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span style="font-size: 24px;">📎</span>
+      <div>
+        <strong>Paperclip Control Plane — The Localhost Company</strong>
+        <div style="font-size: 12px; color: var(--muted);">OpenHUB 2026 • CEO Agent (hermes3:8b) • BA (gemma:e4b) • Dev & QA (Hermes + Playwright MCP)</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span class="badge" id="status-badge">STATUS: IDLE</span>
+      <span class="badge" id="retry-badge">Rebotes Dev↔QA: 0 / 3</span>
+      <a href="http://localhost:8080" target="_blank" style="color: var(--accent); font-size: 13px; text-decoration: none;">↗ Abrir App (:8080)</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="card full-width">
+      <h3>Flujo Corporativo Autónomo (Paperclip Workflow)</h3>
+      <div class="stages" id="stages-container"></div>
+    </section>
+
+    <section class="card">
+      <h3>Directiva de la Junta Directiva (Board of Directors)</h3>
+      <label style="font-size: 12px; color: var(--muted);">Proyecto</label>
+      <input id="project-input" value="Módulo de Checkout con Validador de Cupones" />
+      <label style="font-size: 12px; color: var(--muted);">Directiva de Negocio</label>
+      <textarea id="directive-input" rows="3">Crear una aplicación web de checkout con un precio base de $100. Si el usuario ingresa el cupón OPENHUB20 se aplica un 20% de descuento ($80 final). Si ingresa un cupón inválido debe mostrarse una alerta de error y mantener el total en $100.</textarea>
+      <div class="controls">
+        <button onclick="sendDirective()">🚀 Enviar Directiva al CEO</button>
+        <button class="warning" onclick="injectBug()">🐞 Demo Paso 4.3.5: Inyectar Bug ($30 desc) & Auto-Reparar</button>
+        <button class="success" onclick="approveRelease()">✅ Firmar Release (BOARD_SIGN_OFF)</button>
+      </div>
+      <div id="exec-summary-box" style="margin-top: 14px; display: none;">
+        <h4 style="margin: 0 0 6px 0; color: var(--success);">Resumen Ejecutivo del CEO Agent</h4>
+        <pre id="exec-summary"></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Trazabilidad en Tiempo Real (Agentes & MCP)</h3>
+      <div class="logs" id="logs-container"></div>
+    </section>
+
+    <section class="card">
+      <h3>Especificación Generada (/workspace/SPEC.md)</h3>
+      <pre id="spec-box">Esperando al Business Analyst Agent (OpenClaw - gemma:e4b)...</pre>
+    </section>
+
+    <section class="card">
+      <h3>Memoria Procedimental (~/.hermes/skills/) & Tests E2E</h3>
+      <pre id="skills-box">Esperando compilación de habilidades de Hermes Agent...</pre>
+    </section>
+  </main>
+
+  <script>
+    async function sendDirective() {
+      const project = document.getElementById('project-input').value;
+      const directive = document.getElementById('directive-input').value;
+      await fetch('/api/board/directive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project, directive })
+      });
+      refreshState();
+    }
+
+    async function injectBug() {
+      const res = await fetch('/api/demo/inject-bug', { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.detail || 'Error al inyectar bug');
+      }
+      refreshState();
+    }
+
+    async function approveRelease() {
+      await fetch('/api/board/approve', { method: 'POST' });
+      refreshState();
+    }
+
+    async function refreshState() {
+      try {
+        const res = await fetch('/api/state');
+        const data = await res.json();
+
+        document.getElementById('status-badge').textContent = `STATUS: ${data.status}`;
+        document.getElementById('retry-badge').textContent = `Rebotes Dev↔QA: ${data.fix_iterations} / ${data.max_fix_iterations}`;
+
+        const stagesEl = document.getElementById('stages-container');
+        stagesEl.innerHTML = data.stages.map(s => `
+          <div class="stage-box ${s.status}">
+            <div style="font-size: 12px; color: var(--muted);">${s.owner.toUpperCase()}</div>
+            <div style="font-weight: 600; margin: 4px 0;">${s.label}</div>
+            <div style="font-size: 12px; text-transform: uppercase;">Estado: <strong>${s.status}</strong></div>
+          </div>
+        `).join('');
+
+        if (data.executive_summary) {
+          document.getElementById('exec-summary-box').style.display = 'block';
+          document.getElementById('exec-summary').textContent = data.executive_summary;
+        }
+
+        const logsEl = document.getElementById('logs-container');
+        logsEl.innerHTML = [...data.logs].reverse().map(l => `
+          <div class="log-item ${l.level}">
+            <div><strong>[${l.timestamp}] [${l.role.toUpperCase()}] (${l.stage})</strong> — ${l.message}</div>
+            ${l.details ? `<pre>${l.details}</pre>` : ''}
+          </div>
+        `).join('');
+
+        if (data.artifacts && data.artifacts.spec_md) {
+          document.getElementById('spec-box').textContent = data.artifacts.spec_md;
+        }
+
+        if (data.artifacts) {
+          const parts = [];
+          if (data.artifacts.skills && data.artifacts.skills.length) {
+            for (const sk of data.artifacts.skills) {
+              parts.push(`=== ~/.hermes/skills/${sk.name} ===\n${sk.content}`);
+            }
+          }
+          if (data.artifacts.tests && data.artifacts.tests.length) {
+            for (const ts of data.artifacts.tests) {
+              parts.push(`=== /tests/${ts.name} ===\n${ts.content}`);
+            }
+          }
+          if (parts.length) {
+            document.getElementById('skills-box').textContent = parts.join('\n\n');
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setInterval(refreshState, 1500);
+    refreshState();
+  </script>
+</body>
+</html>

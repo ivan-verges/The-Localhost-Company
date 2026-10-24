@@ -1,0 +1,56 @@
+company:
+  name: "The Localhost Company"
+  max_fix_iterations: 3
+  require_board_approval_on_release: true
+
+roles:
+  ceo:
+    title: "Chief Executive Officer"
+    model: "hermes3:8b"
+    prompt_file: "/app/prompts/ceo.md"
+    subordinates:
+      - business_analyst
+      - developer
+      - qa_engineer
+
+  business_analyst:
+    title: "Lead Business Analyst"
+    endpoint: "http://analyst-openclaw:4000"
+    model: "gemma:e4b"
+    prompt_file: "/app/prompts/analyst.md"
+    deliverables:
+      - "/workspace/SPEC.md"
+
+  developer:
+    title: "Senior Full-Stack Developer"
+    endpoint: "http://dev-hermes:8000"
+    model: "hermes3:8b"
+    prompt_file: "/app/prompts/developer.md"
+    mcp_servers:
+      - filesystem
+      - git
+      - bash_runner
+
+  qa_engineer:
+    title: "Autonomous QA Automation Engineer"
+    endpoint: "http://qa-hermes:8000"
+    model: "hermes3:8b"
+    prompt_file: "/app/prompts/qa.md"
+    mcp_servers:
+      - playwright_mcp
+
+workflow:
+  stages:
+    - id: "1_ANALYSIS"
+      owner: "business_analyst"
+      next_on_success: "2_DEVELOPMENT"
+    - id: "2_DEVELOPMENT"
+      owner: "developer"
+      next_on_success: "3_QA_TESTING"
+    - id: "3_QA_TESTING"
+      owner: "qa_engineer"
+      next_on_success: "4_CEO_FINAL_REVIEW"
+      next_on_failure: "2_DEVELOPMENT" # Rebote automático al Developer con el stack trace
+    - id: "4_CEO_FINAL_REVIEW"
+      owner: "ceo"
+      next_on_success: "BOARD_SIGN_OFF"

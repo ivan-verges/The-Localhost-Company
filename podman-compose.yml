@@ -1,0 +1,97 @@
+services:
+  # 1. Plano de Control y Agente CEO (Paperclip)
+  paperclip-hq:
+    image: paperclip-ai/paperclip:latest
+    build:
+      context: ./services/paperclip-hq
+    container_name: localhost-ceo-hq
+    ports:
+      - "3000:3000"
+    environment:
+      - OLLAMA_BASE_URL=http://host.containers.internal:11434/v1
+      - DEFAULT_MODEL=hermes3:8b
+      - COMPANY_CONFIG=/app/config/company.yaml
+    volumes:
+      - ./config:/app/config:Z
+      - ./prompts:/app/prompts:Z
+      - ./workspace:/app/workspace:Z
+      - ./skills:/app/skills:Z
+      - ./tests:/app/tests:Z
+    extra_hosts:
+      - "host.containers.internal:host-gateway"
+
+  # 2. Agente Analista de Negocios (OpenClaw con gemma:e4b)
+  analyst-openclaw:
+    image: openclaw/openclaw:latest
+    build:
+      context: ./services/openclaw
+    container_name: localhost-analyst
+    ports:
+      - "4000:4000"
+    environment:
+      - LLM_PROVIDER=ollama
+      - OLLAMA_API_BASE=http://host.containers.internal:11434
+      - MODEL_NAME=gemma:e4b
+      - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
+      - AGENT_ROLE=business_analyst
+    volumes:
+      - ./prompts:/app/prompts:Z
+      - ./workspace:/app/workspace:Z
+      - ./workspace:/workspace:Z
+    extra_hosts:
+      - "host.containers.internal:host-gateway"
+
+  # 3. Agente Desarrollador (Hermes Agent con hermes3:8b)
+  dev-hermes:
+    image: nousresearch/hermes-agent:latest
+    build:
+      context: ./services/hermes-agent
+    container_name: localhost-developer
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENAI_BASE_URL=http://host.containers.internal:11434/v1
+      - OPENAI_API_KEY=ollama-local
+      - HERMES_MODEL=hermes3:8b
+      - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
+      - AGENT_ROLE=developer
+      - MCP_FILESYSTEM_ROOT=/workspace
+    volumes:
+      - ./workspace:/workspace:Z
+      - ./skills:/root/.hermes/skills:Z
+      - ./prompts:/app/prompts:Z
+    extra_hosts:
+      - "host.containers.internal:host-gateway"
+
+  # 4. Servidor Playwright MCP (Navegador Headless para Pruebas E2E)
+  playwright-mcp:
+    image: playwright-mcp-server:latest
+    build:
+      context: ./services/playwright-mcp
+    container_name: localhost-playwright-mcp
+    ports:
+      - "8931:8931"
+    command: ["npx", "@playwright/mcp@latest", "--headless", "--port", "8931"]
+
+  # 5. Agente QA Tester (Hermes Agent conectado a Playwright MCP)
+  qa-hermes:
+    image: nousresearch/hermes-agent:latest
+    build:
+      context: ./services/hermes-agent
+    container_name: localhost-qa
+    environment:
+      - OPENAI_BASE_URL=http://host.containers.internal:11434/v1
+      - OPENAI_API_KEY=ollama-local
+      - HERMES_MODEL=hermes3:8b
+      - PAPERCLIP_API_URL=http://paperclip-hq:3000/api
+      - AGENT_ROLE=qa_engineer
+      - MCP_SSE_URL=http://playwright-mcp:8931/sse
+      - TARGET_APP_URL=http://dev-hermes:8080
+    volumes:
+      - ./workspace:/workspace:Z
+      - ./tests:/tests:Z
+      - ./prompts:/app/prompts:Z
+    depends_on:
+      - playwright-mcp
+    extra_hosts:
+      - "host.containers.internal:host-gateway"
