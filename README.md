@@ -23,6 +23,9 @@ Una startup de software completa (CEO, Business Analyst, Full-Stack Developer y 
   - [3. Demostración de Self-Healing (Inyección de Bugs)](#3-demostración-de-self-healing-inyección-de-bugs)
   - [4. Aprobación Final de la Junta Directiva (Board Sign-Off)](#4-aprobación-final-de-la-junta-directiva-board-sign-off)
 - [Personalización y Configuración](#-personalización-y-configuración)
+  - [Variables de Entorno en `.env` (Recomendado)](#variables-de-entorno-en-env-recomendado)
+  - [Organigrama y Parámetros en `config/company.yaml`](#organigrama-y-parámetros-en-configcompanyyaml)
+  - [Personalizar los Prompts de los Agentes](#personalizar-los-prompts-de-los-agentes)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Referencia de la API REST](#-referencia-de-la-api-rest)
 - [Solución de Problemas Frecuentes (FAQ)](#-solución-de-problemas-frecuentes-faq)
@@ -62,11 +65,11 @@ flowchart TD
 
 | Rol Corporativo      | Contenedor                                    | Puerto(s)                      | Modelo Predeterminado | Responsabilidad Principal                                                                                                            |
 | :------------------- | :-------------------------------------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| **CEO Agent**        | `localhost-ceo-hq` (`paperclip-hq`)           | `:3000`                        | `hermes3:8b`          | Plano de control, orquestación, tablero Kanban web, auditoría y control de reintentos (máx 3).                                       |
-| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`)      | `:4000`                        | `gemma4:e4b`          | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`.             |
-| **Developer Agent**  | `localhost-developer` (`dev-hermes`)          | `:8080` (App)<br>`:8000` (API) | `hermes3:8b`          | Implementa la app web (`index.html`, `checkout.js`), realiza commits Git locales y compila memoria procedimental en `./skills/`.     |
-| **Playwright MCP**   | `localhost-playwright-mcp` (`playwright-mcp`) | `:8931`                        | _(MCP Server)_        | Servidor MCP que expone un navegador Chromium Headless para testing E2E interactivo en la red local.                                 |
-| **QA Engineer**      | `localhost-qa` (`qa-hermes`)                  | `:8000` (API)                  | `hermes3:8b`          | Conecta con Playwright MCP, ejecuta los tests contra `http://dev-hermes:8080` y emite `STATUS: TEST_PASSED` o `STATUS: TEST_FAILED`. |
+| **CEO Agent**        | `localhost-ceo-hq` (`paperclip-hq`)           | `:3000` (Web & API)            | `hermes3:8b`          | Plano de control, orquestación, tablero Kanban web, auditoría y control de reintentos (máx 3).                                       |
+| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`)      | `:4000` (API)                  | `gemma4:e4b`          | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`.             |
+| **Developer Agent**  | `localhost-developer` (`dev-hermes`)          | `:8080` (App)<br>`:8000` (API interna) | `hermes3:8b`          | Implementa la app web (`index.html`, `checkout.js`), realiza commits Git locales y compila memoria procedimental en `./skills/`.     |
+| **Playwright MCP**   | `localhost-playwright-mcp` (`playwright-mcp`) | `:8931` (MCP Server)           | _(MCP Server)_        | Servidor MCP que expone un navegador Chromium Headless para testing E2E interactivo en la red local.                                 |
+| **QA Engineer**      | `localhost-qa` (`qa-hermes`)                  | `:8000` (API interna)          | `hermes3:8b`          | Conecta con Playwright MCP, ejecuta los tests contra `http://dev-hermes:8080` y emite `STATUS: TEST_PASSED` o `STATUS: TEST_FAILED`. |
 
 ---
 
@@ -101,8 +104,13 @@ flowchart TD
 
 El sistema está configurado por defecto para utilizar:
 
-- `hermes3:8b` para razonamiento del CEO, desarrollo full-stack y análisis de QA.
-- `gemma4:e4b` o `gemma4:e2b` (o `qwen2.5-coder:3b`) para el Business Analyst.
+- **Estándar (16 GB+ RAM / 8 GB+ VRAM)**:
+  - `hermes3:8b`: Razonamiento estratégico del CEO, desarrollo full-stack de Hermes Dev y análisis E2E de QA.
+  - `gemma4:e4b`: Descomposición de requerimientos técnicos del Business Analyst (OpenClaw).
+
+- **Equipos Ligeros (8 GB RAM o VRAM reducida)**:
+  - `hermes3:3b`: Versión ultraligera (~2.0 GB) para CEO, Dev y QA.
+  - `gemma4:e2b` (o `qwen2.5-coder:3b`): Para el Business Analyst (~1.5–2.5 GB).
 
 ### 🍎 Optimización para Apple Silicon (M1 hasta M6) con variantes `-mlx`:
 
@@ -111,7 +119,7 @@ Si estás ejecutando el taller en chips de **Apple Silicon (M1 hasta M6)**, pued
 - `gemma4:e4b-mlx`
 - `gemma4:e2b-mlx`
 
-> **Nota:** El sistema implementa _fallback automático_: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma4:e2b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
+> **Nota sobre Fallback Automático:** Si no tienes descargado el modelo exacto configurado, el plano de control implementa _fallback automático_ y buscará alternativas locales disponibles en tu Ollama (como `gemma4:e2b`, `hermes3:3b`, `llama3.2` o `qwen2.5:7b`). Gracias a la compatibilidad con variables de entorno en `.env`, puedes especificar cualquier modelo o variante descargada (incluyendo sufijos `-mlx`) sin necesidad de renombrarlos con `ollama cp`.
 
 ---
 
@@ -124,7 +132,10 @@ Si estás ejecutando el taller en chips de **Apple Silicon (M1 hasta M6)**, pued
 git clone https://github.com/ivan-verges/The-Localhost-Company.git
 cd TheLocalhostCompany
 
-# 2. Ejecutar el script automatizado de preparación
+# 2. Crear tu archivo de configuración .env desde la plantilla
+cp .env.example .env
+
+# 3. Ejecutar el script automatizado de preparación
 chmod +x scripts/*.sh
 ./scripts/setup.sh
 ```
@@ -134,7 +145,7 @@ El script `./scripts/setup.sh`:
 - Crea las carpetas requeridas (`workspace`, `skills`, `tests`, `config`, `prompts`).
 - Inicializa el repositorio local en `./workspace`.
 - Detecta si usas Docker o Podman.
-- Verifica si Ollama está en ejecución y los modelos disponibles.
+- Carga las variables de `.env` (si existe) y verifica la disponibilidad de Ollama y de los modelos configurados.
 
 ---
 
@@ -147,35 +158,41 @@ Para que los contenedores puedan comunicarse con Ollama en tu máquina anfitrion
 OLLAMA_HOST=0.0.0.0:11434 ollama serve
 ```
 
-Descarga los modelos que desees utilizar (o define tus preferencias en `.env`):
+Descarga los modelos que desees utilizar según tu hardware:
 
 ```bash
-# Modelo principal de razonamiento y código (CEO, Dev y QA)
+# --- Configuración Estándar (16 GB+ RAM / GPU dedicada) ---
 ollama pull hermes3:8b
-
-# Modelo para el analista de negocios (Gemma 4):
 ollama pull gemma4:e4b
 
-# O para equipos de 8 GB de RAM (modelo ligero):
+# --- Alternativa Ligera (8 GB RAM / GPUs compactas) ---
+ollama pull hermes3:3b
 ollama pull gemma4:e2b
 
-# En Apple Silicon (M1-M6) para optimización de memoria unificada:
+# --- Variantes Optimizadas Apple Silicon (M1-M6 con Metal) ---
 ollama pull gemma4:e4b-mlx
 # o: ollama pull gemma4:e2b-mlx
 ```
 
 #### Configurar `.env` (Sin necesidad de modificar código ni compose files)
 
-Crea o edita el archivo `.env` en la raíz (puedes basarte en `.env.example`):
+Edita el archivo `.env` en la raíz para definir los modelos que descargaste:
 
 ```dotenv
 OLLAMA_BASE_URL=http://host.containers.internal:11434/v1
 OLLAMA_API_BASE=http://host.containers.internal:11434
 
+# Configuración Estándar:
 CEO_MODEL=hermes3:8b
-ANALYST_MODEL=gemma4:e4b     # O usa gemma4:e2b, gemma4:e4b-mlx, etc.
+ANALYST_MODEL=gemma4:e4b     # O usa gemma4:e4b-mlx, gemma4:e2b-mlx, etc.
 DEV_MODEL=hermes3:8b
 QA_MODEL=hermes3:8b
+
+# O para entornos de 8 GB de RAM:
+# CEO_MODEL=hermes3:3b
+# ANALYST_MODEL=gemma4:e2b
+# DEV_MODEL=hermes3:3b
+# QA_MODEL=hermes3:3b
 ```
 
 ¡Listo! No necesitas ejecutar `ollama cp` ni crear alias, ni modificar archivos YAML o de Python. Todos los contenedores leen automáticamente las variables del archivo `.env`.
@@ -288,9 +305,25 @@ Cuando el flujo termina con éxito, el estado queda en `AWAITING_BOARD_APPROVAL`
 
 ## ⚙️ Personalización y Configuración
 
+### Variables de Entorno en `.env` (Recomendado)
+
+La forma más rápida y desacoplada de configurar los modelos y endpoints de Ollama es mediante el archivo `.env` en la raíz del proyecto. Estas variables se propagan automáticamente a todos los contenedores y sobreescriben los valores predeterminados de `config/company.yaml`:
+
+```dotenv
+# Endpoints de comunicación con Ollama
+OLLAMA_BASE_URL=http://host.containers.internal:11434/v1
+OLLAMA_API_BASE=http://host.containers.internal:11434
+
+# Modelos por rol
+CEO_MODEL=hermes3:8b          # CEO Agent (Paperclip HQ)
+ANALYST_MODEL=gemma4:e4b      # Business Analyst (OpenClaw)
+DEV_MODEL=hermes3:8b          # Full-Stack Developer (Hermes Dev)
+QA_MODEL=hermes3:8b           # QA Engineer (Hermes QA)
+```
+
 ### Organigrama y Parámetros en `config/company.yaml`
 
-Puedes ajustar el comportamiento de la empresa editando [config/company.yaml](file:///Users/ivanverges/Projects/TheLocalhostCompany/config/company.yaml):
+Para ajustar parámetros organizacionales como límites de auto-reparación o flujos de aprobación, edita [config/company.yaml](file:///Users/ivanverges/Projects/TheLocalhostCompany/config/company.yaml):
 
 ```yaml
 company:
@@ -328,6 +361,8 @@ En la carpeta [prompts/](file:///Users/ivanverges/Projects/TheLocalhostCompany/p
 
 ```text
 TheLocalhostCompany/
+├── .env.example              # Plantilla de configuración de variables de entorno y modelos
+├── .env                      # Configuración local activa (ignorado por Git)
 ├── config/
 │   └── company.yaml          # Definición de la empresa, roles, modelos y límites
 ├── prompts/                  # Prompts de sistema para cada agente
@@ -390,14 +425,23 @@ En Docker Desktop, `host.docker.internal` está habilitado por defecto mediante 
 ### 3. Falta de memoria RAM o lentitud con modelos grandes
 
 **Solución**:
-Puedes usar modelos cuantizados más pequeños. Cambia en `config/company.yaml` o descarga:
+Puedes usar modelos cuantizados más ligeros de ~2–3B parámetros. Descárgalos en Ollama:
 
 ```bash
-ollama pull qwen2.5-coder:3b
-ollama pull llama3.2:3b
+ollama pull hermes3:3b
+ollama pull gemma4:e2b
 ```
 
-Paperclip detecta automáticamente los modelos disponibles en tu Ollama.
+Y configúralos directamente en tu archivo `.env`:
+
+```dotenv
+CEO_MODEL=hermes3:3b
+ANALYST_MODEL=gemma4:e2b
+DEV_MODEL=hermes3:3b
+QA_MODEL=hermes3:3b
+```
+
+Paperclip detecta automáticamente los modelos disponibles en tu Ollama y aplica fallback inteligente si alguno no se encuentra.
 
 ### 4. Reiniciar el entorno a un estado limpio
 
