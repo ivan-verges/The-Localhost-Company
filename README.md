@@ -36,7 +36,7 @@ flowchart TD
     Board["Junta Directiva (Humano / Dashboard)"] -->|"POST /api/board/directive"| CEO["CEO Agent (Paperclip HQ)<br/>:3000 | hermes3:8b"]
 
     subgraph Localhost ["Red de Contenedores Locales (Docker / Podman)"]
-        CEO -->|"1. Delegar Requerimiento"| Analyst["Business Analyst (OpenClaw)<br/>:4000 | gemma:e4b"]
+        CEO -->|"1. Delegar Requerimiento"| Analyst["Business Analyst (OpenClaw)<br/>:4000 | gemma4:e4b"]
         Analyst -->|"Genera /workspace/SPEC.md"| Workspace[("workspace<br/>(Git Repo Local)")]
 
         CEO -->|"2. Asignar Tarea"| Dev["Developer Agent (Hermes Agent)<br/>:8080 (App) / :8000 (API) | hermes3:8b"]
@@ -63,7 +63,7 @@ flowchart TD
 | Rol Corporativo      | Contenedor                                    | Puerto(s)                      | Modelo Predeterminado | Responsabilidad Principal                                                                                                            |
 | :------------------- | :-------------------------------------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | **CEO Agent**        | `localhost-ceo-hq` (`paperclip-hq`)           | `:3000`                        | `hermes3:8b`          | Plano de control, orquestación, tablero Kanban web, auditoría y control de reintentos (máx 3).                                       |
-| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`)      | `:4000`                        | `gemma:e4b`           | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`.             |
+| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`)      | `:4000`                        | `gemma4:e4b`          | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`.             |
 | **Developer Agent**  | `localhost-developer` (`dev-hermes`)          | `:8080` (App)<br>`:8000` (API) | `hermes3:8b`          | Implementa la app web (`index.html`, `checkout.js`), realiza commits Git locales y compila memoria procedimental en `./skills/`.     |
 | **Playwright MCP**   | `localhost-playwright-mcp` (`playwright-mcp`) | `:8931`                        | _(MCP Server)_        | Servidor MCP que expone un navegador Chromium Headless para testing E2E interactivo en la red local.                                 |
 | **QA Engineer**      | `localhost-qa` (`qa-hermes`)                  | `:8000` (API)                  | `hermes3:8b`          | Conecta con Playwright MCP, ejecuta los tests contra `http://dev-hermes:8080` y emite `STATUS: TEST_PASSED` o `STATUS: TEST_FAILED`. |
@@ -111,7 +111,7 @@ Si estás ejecutando el taller en chips de **Apple Silicon (M1 hasta M6)**, pued
 - `gemma4:e4b-mlx`
 - `gemma4:e2b-mlx`
 
-> **Nota:** El sistema implementa _fallback automático_: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma3:4b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
+> **Nota:** El sistema implementa _fallback automático_: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma4:e2b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
 
 ---
 
@@ -165,6 +165,7 @@ ollama pull gemma4:e4b-mlx
 ```
 
 #### Configurar `.env` (Sin necesidad de modificar código ni compose files)
+
 Crea o edita el archivo `.env` en la raíz (puedes basarte en `.env.example`):
 
 ```dotenv
@@ -176,6 +177,7 @@ ANALYST_MODEL=gemma4:e4b     # O usa gemma4:e2b, gemma4:e4b-mlx, etc.
 DEV_MODEL=hermes3:8b
 QA_MODEL=hermes3:8b
 ```
+
 ¡Listo! No necesitas ejecutar `ollama cp` ni crear alias, ni modificar archivos YAML o de Python. Todos los contenedores leen automáticamente las variables del archivo `.env`.
 
 ---

@@ -34,7 +34,7 @@ async def query_ollama(system_prompt: str, user_prompt: str) -> Optional[str]:
         "http://host.docker.internal:11434/v1",
         "http://host.containers.internal:11434/v1",
     ]
-    models = [HERMES_MODEL, "hermes3:8b", "gemma:e4b", "gemma3:4b", "llama3.2"]
+    models = [HERMES_MODEL, "hermes3:8b", "gemma4:e4b", "gemma4:e2b", "llama3.2"]
 
     async with httpx.AsyncClient(timeout=45.0) as client:
         for base in urls:

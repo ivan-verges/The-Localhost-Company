@@ -88,7 +88,7 @@ async def query_ollama(model: str, system_prompt: str, user_prompt: str) -> Opti
         "http://host.docker.internal:11434/v1",
         "http://host.containers.internal:11434/v1",
     ]
-    models_to_try = [model, "hermes3:8b", "gemma:e4b", "gemma3:4b", "llama3.2", "qwen2.5:7b"]
+    models_to_try = [model, "hermes3:8b", "gemma4:e4b", "gemma4:e2b", "llama3.2", "qwen2.5:7b"]
 
     async with httpx.AsyncClient(timeout=45.0) as client:
         for base_url in urls_to_try:

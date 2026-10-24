@@ -9,7 +9,7 @@ from pydantic import BaseModel
 app = FastAPI(title="OpenClaw - Business Analyst Agent")
 
 OLLAMA_API_BASE = os.environ.get("OLLAMA_API_BASE", "http://host.containers.internal:11434")
-MODEL_NAME = os.environ.get("MODEL_NAME", "gemma:e4b")
+MODEL_NAME = os.environ.get("MODEL_NAME", "gemma4:e4b")
 PROMPT_PATH = "/app/prompts/analyst.md"
 
 
@@ -24,7 +24,7 @@ async def generate_with_ollama(system_prompt: str, user_prompt: str) -> Optional
         "http://host.docker.internal:11434",
         "http://host.containers.internal:11434",
     ]
-    candidate_models = [MODEL_NAME, "gemma:e4b", "gemma3:4b", "hermes3:8b", "llama3.2"]
+    candidate_models = [MODEL_NAME, "gemma4:e4b", "gemma4:e2b", "hermes3:8b", "llama3.2"]
 
     async with httpx.AsyncClient(timeout=45.0) as client:
         for base in bases:
