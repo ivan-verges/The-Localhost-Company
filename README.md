@@ -299,16 +299,16 @@ company:
 roles:
   ceo:
     title: "Chief Executive Officer"
-    model: "hermes3:8b" # Cambia el modelo de Ollama según tu hardware
+    model: "${CEO_MODEL:-hermes3:8b}"
   business_analyst:
     title: "Lead Business Analyst"
-    model: "gemma:e4b"
+    model: "${ANALYST_MODEL:-gemma4:e4b}"
   developer:
     title: "Senior Full-Stack Developer"
-    model: "hermes3:8b"
+    model: "${DEV_MODEL:-hermes3:8b}"
   qa_engineer:
     title: "Autonomous QA Automation Engineer"
-    model: "hermes3:8b"
+    model: "${QA_MODEL:-hermes3:8b}"
 ```
 
 ### Personalizar los Prompts de los Agentes

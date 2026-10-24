@@ -43,7 +43,10 @@ def load_company_config() -> Dict[str, Any]:
     cfg: Dict[str, Any] = {}
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f) or {}
+            raw_content = f.read()
+            # Expand ${ENV_VAR} or ${ENV_VAR:-default} from environment variables
+            expanded = os.path.expandvars(raw_content)
+            cfg = yaml.safe_load(expanded) or {}
 
     # Allow environment variables from .env to override company.yaml values directly
     roles = cfg.setdefault("roles", {})

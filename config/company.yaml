@@ -6,7 +6,7 @@ company:
 roles:
   ceo:
     title: "Chief Executive Officer"
-    model: "hermes3:8b"
+    model: "${CEO_MODEL:-hermes3:8b}"
     prompt_file: "/app/prompts/ceo.md"
     subordinates:
       - business_analyst
@@ -16,7 +16,7 @@ roles:
   business_analyst:
     title: "Lead Business Analyst"
     endpoint: "http://analyst-openclaw:4000"
-    model: "gemma:e4b"
+    model: "${ANALYST_MODEL:-gemma4:e4b}"
     prompt_file: "/app/prompts/analyst.md"
     deliverables:
       - "/workspace/SPEC.md"
@@ -24,7 +24,7 @@ roles:
   developer:
     title: "Senior Full-Stack Developer"
     endpoint: "http://dev-hermes:8000"
-    model: "hermes3:8b"
+    model: "${DEV_MODEL:-hermes3:8b}"
     prompt_file: "/app/prompts/developer.md"
     mcp_servers:
       - filesystem
@@ -34,7 +34,7 @@ roles:
   qa_engineer:
     title: "Autonomous QA Automation Engineer"
     endpoint: "http://qa-hermes:8000"
-    model: "hermes3:8b"
+    model: "${QA_MODEL:-hermes3:8b}"
     prompt_file: "/app/prompts/qa.md"
     mcp_servers:
       - playwright_mcp
