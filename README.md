@@ -34,45 +34,46 @@ Una startup de software completa (CEO, Business Analyst, Full-Stack Developer y 
 ```mermaid
 flowchart TD
     Board["Junta Directiva (Humano / Dashboard)"] -->|"POST /api/board/directive"| CEO["CEO Agent (Paperclip HQ)<br/>:3000 | hermes3:8b"]
-    
+
     subgraph Localhost ["Red de Contenedores Locales (Docker / Podman)"]
         CEO -->|"1. Delegar Requerimiento"| Analyst["Business Analyst (OpenClaw)<br/>:4000 | gemma:e4b"]
         Analyst -->|"Genera /workspace/SPEC.md"| Workspace[("workspace<br/>(Git Repo Local)")]
-        
+
         CEO -->|"2. Asignar Tarea"| Dev["Developer Agent (Hermes Agent)<br/>:8080 (App) / :8000 (API) | hermes3:8b"]
         Dev -->|"Escribe codigo & commits"| Workspace
         Dev -->|"Compila habilidades"| Skills[("skills<br/>(Memoria Procedimental)")]
-        
+
         CEO -->|"3. Ordenar Pruebas E2E"| QA["QA Agent (Hermes Agent)<br/>:8000 (API) | hermes3:8b"]
         QA -->|"Controla Navegador"| MCP["Playwright MCP<br/>:8931 (Headless Chromium)"]
         MCP -->|"Inspecciona DOM y test-ids"| Dev
-        
+
         QA -->|"STATUS: TEST_FAILED (Stack Trace)"| CEO
         CEO -.->|"4. Rebote Autonomo / Fix Loop (Max 3)"| Dev
         QA -->|"STATUS: TEST_PASSED"| CEO
     end
-    
+
     CEO -->|"5. Solicitar BOARD_SIGN_OFF"| Board
-    
+
     Ollama[("Ollama Host<br/>:11434 (Modelos Locales)")] -.-> CEO
     Ollama -.-> Analyst
     Ollama -.-> Dev
     Ollama -.-> QA
 ```
 
-| Rol Corporativo | Contenedor | Puerto(s) | Modelo Predeterminado | Responsabilidad Principal |
-| :--- | :--- | :--- | :--- | :--- |
-| **CEO Agent** | `localhost-ceo-hq` (`paperclip-hq`) | `:3000` | `hermes3:8b` | Plano de control, orquestación, tablero Kanban web, auditoría y control de reintentos (máx 3). |
-| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`) | `:4000` | `gemma:e4b` | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`. |
-| **Developer Agent** | `localhost-developer` (`dev-hermes`) | `:8080` (App)<br>`:8000` (API) | `hermes3:8b` | Implementa la app web (`index.html`, `checkout.js`), realiza commits Git locales y compila memoria procedimental en `./skills/`. |
-| **Playwright MCP** | `localhost-playwright-mcp` (`playwright-mcp`) | `:8931` | *(MCP Server)* | Servidor MCP que expone un navegador Chromium Headless para testing E2E interactivo en la red local. |
-| **QA Engineer** | `localhost-qa` (`qa-hermes`) | `:8000` (API) | `hermes3:8b` | Conecta con Playwright MCP, ejecuta los tests contra `http://dev-hermes:8080` y emite `STATUS: TEST_PASSED` o `STATUS: TEST_FAILED`. |
+| Rol Corporativo      | Contenedor                                    | Puerto(s)                      | Modelo Predeterminado | Responsabilidad Principal                                                                                                            |
+| :------------------- | :-------------------------------------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| **CEO Agent**        | `localhost-ceo-hq` (`paperclip-hq`)           | `:3000`                        | `hermes3:8b`          | Plano de control, orquestación, tablero Kanban web, auditoría y control de reintentos (máx 3).                                       |
+| **Business Analyst** | `localhost-analyst` (`analyst-openclaw`)      | `:4000`                        | `gemma:e4b`           | Descompone directivas en especificaciones técnicas con selectores `data-testid` y casos Gherkin en `/workspace/SPEC.md`.             |
+| **Developer Agent**  | `localhost-developer` (`dev-hermes`)          | `:8080` (App)<br>`:8000` (API) | `hermes3:8b`          | Implementa la app web (`index.html`, `checkout.js`), realiza commits Git locales y compila memoria procedimental en `./skills/`.     |
+| **Playwright MCP**   | `localhost-playwright-mcp` (`playwright-mcp`) | `:8931`                        | _(MCP Server)_        | Servidor MCP que expone un navegador Chromium Headless para testing E2E interactivo en la red local.                                 |
+| **QA Engineer**      | `localhost-qa` (`qa-hermes`)                  | `:8000` (API)                  | `hermes3:8b`          | Conecta con Playwright MCP, ejecuta los tests contra `http://dev-hermes:8080` y emite `STATUS: TEST_PASSED` o `STATUS: TEST_FAILED`. |
 
 ---
 
 ## 💻 Requisitos Previos
 
 ### Hardware Recomendado
+
 - **RAM del Sistema**: Mínimo 8 GB (16 GB o más recomendado si se corre inferencia en CPU o memoria unificada).
 - **Disco**: 10 GB de espacio libre para imágenes de contenedores y pesos de modelos.
 - **Aceleración por GPU (Altamente Recomendado)**:
@@ -84,6 +85,7 @@ flowchart TD
   - **CPU (Fallback)**: Procesadores Intel / AMD modernos con instrucciones AVX2 (funciona, pero con tiempos de respuesta más altos).
 
 ### Software Requerido
+
 1. **[Docker](https://www.docker.com/) con Docker Compose** (o **[Podman](https://podman.io/) con [Podman Compose](https://github.com/containers/podman-compose)**):
    - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) o [OrbStack](https://orbstack.dev/) o [Podman Desktop / CLI](https://podman.io/).
    - Linux: [Docker Engine](https://docs.docker.com/engine/install/) con `docker-compose-plugin` (o [Podman](https://podman.io/) y [podman-compose](https://github.com/containers/podman-compose)).
@@ -98,15 +100,18 @@ flowchart TD
 ## 🦙 Modelos de Ollama Recomendados
 
 El sistema está configurado por defecto para utilizar:
+
 - `hermes3:8b` para razonamiento del CEO, desarrollo full-stack y análisis de QA.
 - `gemma4:e4b` o `gemma4:e2b` (o `qwen2.5-coder:3b`) para el Business Analyst.
 
 ### 🍎 Optimización para Apple Silicon (M1 hasta M6) con variantes `-mlx`:
+
 Si estás ejecutando el taller en chips de **Apple Silicon (M1 hasta M6)**, puedes utilizar las variantes **`-mlx`** de los modelos para aprovechar al máximo el motor Metal, el Neural Engine y el ancho de banda de la memoria unificada con menor consumo energético y mayor velocidad de tokens por segundo:
+
 - `gemma4:e4b-mlx`
 - `gemma4:e2b-mlx`
 
-> **Nota:** El sistema implementa *fallback automático*: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma3:4b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
+> **Nota:** El sistema implementa _fallback automático_: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma3:4b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
 
 ---
 
@@ -125,6 +130,7 @@ chmod +x scripts/*.sh
 ```
 
 El script `./scripts/setup.sh`:
+
 - Crea las carpetas requeridas (`workspace`, `skills`, `tests`, `config`, `prompts`).
 - Inicializa el repositorio local en `./workspace`.
 - Detecta si usas Docker o Podman.
@@ -156,22 +162,24 @@ ollama pull gemma4:e2b
 ollama cp gemma4:e2b gemma:e4b
 
 # En Apple Silicon (M1-M6) para optimización extrema de memoria/batería:
-# ollama pull gemma4:e4b-mlx && ollama cp gemma4:e4b-mlx gemma:e4b
-# ollama pull gemma4:e2b-mlx && ollama cp gemma4:e2b-mlx gemma:e4b
+ollama pull gemma4:e4b-mlx && ollama cp gemma4:e4b-mlx gemma:e4b
+ollama pull gemma4:e2b-mlx && ollama cp gemma4:e2b-mlx gemma:e4b
 ```
 
-*(Si prefieres Qwen o Llama en equipos con 8 GB de RAM o menos, también puedes usar `ollama pull qwen2.5-coder:3b` o `ollama pull llama3.2:3b`).*
+_(Si prefieres Qwen o Llama en equipos con 8 GB de RAM o menos, también puedes usar `ollama pull qwen2.5-coder:3b` o `ollama pull llama3.2:3b`)._
 
 ---
 
 ### Paso 3: Levantar los 5 Contenedores
 
 #### Opción A: Con Docker Compose (Recomendado)
+
 ```bash
 docker compose up --build -d
 ```
 
 #### Opción B: Con Podman Compose
+
 ```bash
 podman-compose up --build -d
 ```
@@ -187,6 +195,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 ```
 
 Deberías ver:
+
 - `localhost-ceo-hq` en el puerto `0.0.0.0:3000->3000`
 - `localhost-analyst` en el puerto `0.0.0.0:4000->4000`
 - `localhost-developer` en el puerto `0.0.0.0:8080->8080`
@@ -202,14 +211,17 @@ Deberías ver:
 Puedes enviar la directiva de 3 formas:
 
 #### A través del Dashboard Web:
+
 Abre tu navegador en **[http://localhost:3000](http://localhost:3000)** y haz clic en **"Enviar Directiva Demo"** (o escribe tu propia directiva).
 
 #### A través del Script provisto:
+
 ```bash
 ./scripts/send-directive.sh
 ```
 
 #### A través de `curl`:
+
 ```bash
 curl -X POST http://localhost:3000/api/board/directive \
   -H "Content-Type: application/json" \
@@ -224,6 +236,7 @@ curl -X POST http://localhost:3000/api/board/directive \
 ### 2. Monitorear el Tablero Kanban y Logs en Vivo
 
 Entra a **[http://localhost:3000](http://localhost:3000)** para ver en tiempo real:
+
 1. **Etapa 1 (Business Analysis)**: OpenClaw redacta los criterios de aceptación y selectores `data-testid` en `/workspace/SPEC.md`.
 2. **Etapa 2 (Engineering)**: Hermes Dev genera `index.html` y `checkout.js`, hace commit en Git y levanta la app en el puerto `:8080`. Puedes ver la app construida abriendo **[http://localhost:8080](http://localhost:8080)**.
 3. **Etapa 3 (E2E QA Testing)**: Playwright MCP abre un navegador real sin cabeza, escribe en los inputs y valida que `$100 - 20% = $80`. Emite `STATUS: TEST_PASSED`.
@@ -239,7 +252,7 @@ Una de las capacidades más potentes de este proyecto es el **rebote autónomo a
    ```bash
    ./scripts/inject-bug.sh
    ```
-   *(O haz clic en el botón **"🐞 Inyectar Bug Demo ($70 en vez de $80)"** en el dashboard)*.
+   _(O haz clic en el botón **"🐞 Inyectar Bug Demo ($70 en vez de $80)"** en el dashboard)_.
 2. ¿Qué ocurre internamente?
    - Se modifica `workspace/checkout.js` para aplicar un descuento incorrecto de `$30` (dando `$70` en vez de `$80`).
    - El **QA Agent** ejecuta la suite con **Playwright MCP** y detecta: `Expected: $80, Received: $70` (`STATUS: TEST_FAILED`).
@@ -252,6 +265,7 @@ Una de las capacidades más potentes de este proyecto es el **rebote autónomo a
 ### 4. Aprobación Final de la Junta Directiva (Board Sign-Off)
 
 Cuando el flujo termina con éxito, el estado queda en `AWAITING_BOARD_APPROVAL`:
+
 - En la interfaz web [http://localhost:3000](http://localhost:3000), haz clic en el botón **"Firmar Aprobación (BOARD_SIGN_OFF)"**.
 - O vía terminal:
   ```bash
@@ -269,13 +283,13 @@ Puedes ajustar el comportamiento de la empresa editando [config/company.yaml](fi
 ```yaml
 company:
   name: "The Localhost Company"
-  max_fix_iterations: 3             # Límite de rebotes Dev <-> QA antes de escalar al humano
+  max_fix_iterations: 3 # Límite de rebotes Dev <-> QA antes de escalar al humano
   require_board_approval_on_release: true
 
 roles:
   ceo:
     title: "Chief Executive Officer"
-    model: "hermes3:8b"              # Cambia el modelo de Ollama según tu hardware
+    model: "hermes3:8b" # Cambia el modelo de Ollama según tu hardware
   business_analyst:
     title: "Lead Business Analyst"
     model: "gemma:e4b"
@@ -290,6 +304,7 @@ roles:
 ### Personalizar los Prompts de los Agentes
 
 En la carpeta [prompts/](file:///Users/ivanverges/Projects/TheLocalhostCompany/prompts/) puedes cambiar las instrucciones de cada rol:
+
 - `prompts/ceo.md`: Reglas de delegación y gestión de presupuesto de reintentos.
 - `prompts/analyst.md`: Estándar para escribir `SPEC.md` con Gherkin y `data-testid`.
 - `prompts/developer.md`: Reglas de programación web, commits limpios y compilación de skills.
@@ -331,42 +346,51 @@ TheLocalhostCompany/
 
 El plano de control expone los siguientes endpoints en `http://localhost:3000`:
 
-| Método | Endpoint | Descripción | Payload Ejemplo |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/` | Retorna el dashboard web interactivo. | — |
-| `GET` | `/api/state` | Devuelve el estado actual de la empresa, logs y artefactos. | — |
-| `POST` | `/api/board/directive` | Recibe una directiva e inicia el flujo de trabajo. | `{"project": "...", "directive": "..."}` |
-| `POST` | `/api/demo/inject-bug` | Inyecta el bug de $30 de descuento y re-ejecuta QA. | `{}` |
-| `POST` | `/api/board/approve` | Aprueba el release final (firma de la Junta). | `{}` |
+| Método | Endpoint               | Descripción                                                 | Payload Ejemplo                          |
+| :----- | :--------------------- | :---------------------------------------------------------- | :--------------------------------------- |
+| `GET`  | `/`                    | Retorna el dashboard web interactivo.                       | —                                        |
+| `GET`  | `/api/state`           | Devuelve el estado actual de la empresa, logs y artefactos. | —                                        |
+| `POST` | `/api/board/directive` | Recibe una directiva e inicia el flujo de trabajo.          | `{"project": "...", "directive": "..."}` |
+| `POST` | `/api/demo/inject-bug` | Inyecta el bug de $30 de descuento y re-ejecuta QA.         | `{}`                                     |
+| `POST` | `/api/board/approve`   | Aprueba el release final (firma de la Junta).               | `{}`                                     |
 
 ---
 
 ## 🛠 Solución de Problemas Frecuentes (FAQ)
 
 ### 1. `docker compose up` falla al conectarse a Ollama (`host.containers.internal`)
+
 **Causa**: Ollama solo está escuchando en `127.0.0.1` en lugar de `0.0.0.0`.  
 **Solución**:
+
 ```bash
 # En macOS / Linux
 OLLAMA_HOST=0.0.0.0:11434 ollama serve
 ```
+
 En Docker Desktop, `host.docker.internal` está habilitado por defecto mediante la directiva `extra_hosts` incluida en `docker-compose.yml`.
 
 ### 2. Error: "checkout.js aún no existe en /workspace" al inyectar el bug
+
 **Causa**: Intentaste ejecutar `./scripts/inject-bug.sh` antes de que el ciclo inicial completara la implementación.  
 **Solución**: Primero envía la directiva con `./scripts/send-directive.sh`, espera a que el dashboard marque la etapa de QA completada, y luego inyecta el bug.
 
 ### 3. Falta de memoria RAM o lentitud con modelos grandes
+
 **Solución**:
 Puedes usar modelos cuantizados más pequeños. Cambia en `config/company.yaml` o descarga:
+
 ```bash
 ollama pull qwen2.5-coder:3b
 ollama pull llama3.2:3b
 ```
+
 Paperclip detecta automáticamente los modelos disponibles en tu Ollama.
 
 ### 4. Reiniciar el entorno a un estado limpio
+
 Si deseas reiniciar todo el flujo desde cero:
+
 ```bash
 # Detener los contenedores
 docker compose down
