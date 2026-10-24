@@ -80,7 +80,7 @@ flowchart TD
     - **VRAM Recomendada**: Mínimo **6 GB a 8 GB de VRAM** para modelos cuantizados de 3B–8B (ej. RTX 3060, RTX 4060, RTX 3070 o GPUs de servidor T4 / A10G / A100 / L4).
     - **12 GB o más de VRAM** (ej. RTX 3060 12GB, RTX 4070, RTX 3080/4080 o superior) permite cargar modelos de 8B parámetros en memoria de video completa con inferencia instantánea (offloading 100% a GPU) y contextos extensos.
     - Requiere drivers NVIDIA actualizados y soporte para CUDA (Ollama detecta CUDA automáticamente).
-  - **Apple Silicon**: M1 / M2 / M3 / M4 con memoria unificada (Metal activado automáticamente en Ollama).
+  - **Apple Silicon**: M1 hasta M6 (Pro / Max / Ultra) con memoria unificada (Metal activado automáticamente en Ollama).
   - **CPU (Fallback)**: Procesadores Intel / AMD modernos con instrucciones AVX2 (funciona, pero con tiempos de respuesta más altos).
 
 ### Software Requerido
