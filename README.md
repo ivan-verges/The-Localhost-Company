@@ -73,9 +73,15 @@ flowchart TD
 ## 💻 Requisitos Previos
 
 ### Hardware Recomendado
-- **RAM**: Mínimo 8 GB (16 GB o más recomendado para correr modelos locales de 8B parámetros con fluidez).
+- **RAM del Sistema**: Mínimo 8 GB (16 GB o más recomendado si se corre inferencia en CPU o memoria unificada).
 - **Disco**: 10 GB de espacio libre para imágenes de contenedores y pesos de modelos.
-- **CPU/GPU**: Compatible con Apple Silicon (M1/M2/M3/M4) o procesadores Intel/AMD con soporte AVX2 (aceleración por GPU opcional pero ideal).
+- **Aceleración por GPU (Altamente Recomendado)**:
+  - **NVIDIA GPU (CUDA)**:
+    - **VRAM Recomendada**: Mínimo **6 GB a 8 GB de VRAM** para modelos cuantizados de 3B–8B (ej. RTX 3060, RTX 4060, RTX 3070 o GPUs de servidor T4 / A10G / A100 / L4).
+    - **12 GB o más de VRAM** (ej. RTX 3060 12GB, RTX 4070, RTX 3080/4080 o superior) permite cargar modelos de 8B parámetros en memoria de video completa con inferencia instantánea (offloading 100% a GPU) y contextos extensos.
+    - Requiere drivers NVIDIA actualizados y soporte para CUDA (Ollama detecta CUDA automáticamente).
+  - **Apple Silicon**: M1 / M2 / M3 / M4 con memoria unificada (Metal activado automáticamente en Ollama).
+  - **CPU (Fallback)**: Procesadores Intel / AMD modernos con instrucciones AVX2 (funciona, pero con tiempos de respuesta más altos).
 
 ### Software Requerido
 1. **Docker con Docker Compose** (o **Podman con Podman Compose**):
