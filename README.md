@@ -99,9 +99,14 @@ flowchart TD
 
 El sistema está configurado por defecto para utilizar:
 - `hermes3:8b` para razonamiento del CEO, desarrollo full-stack y análisis de QA.
-- `gemma:e4b` (o `gemma3:4b` / `gemma2:2b` / `qwen2.5-coder:3b`) para el Business Analyst.
+- `gemma4:e4b` o `gemma4:e2b` (o `qwen2.5-coder:3b`) para el Business Analyst.
 
-> **Nota:** El sistema implementa *fallback automático*: si no tienes `hermes3:8b`, el plano de control buscará automáticamente modelos disponibles como `llama3.2`, `qwen2.5:7b`, `gemma3:4b` o cualquier modelo descargado en tu Ollama.
+### 🍎 Optimización para Apple Silicon (M1 hasta M6) con variantes `-mlx`:
+Si estás ejecutando el taller en chips de **Apple Silicon (M1 hasta M6)**, puedes utilizar las variantes **`-mlx`** de los modelos para aprovechar al máximo el motor Metal, el Neural Engine y el ancho de banda de la memoria unificada con menor consumo energético y mayor velocidad de tokens por segundo:
+- `gemma4:e4b-mlx`
+- `gemma4:e2b-mlx`
+
+> **Nota:** El sistema implementa *fallback automático*: si no tienes `hermes3:8b` o `gemma4:e4b`, el plano de control buscará automáticamente modelos disponibles como `gemma4:e2b`, `llama3.2`, `qwen2.5:7b`, `gemma3:4b` o cualquier modelo descargado en tu Ollama. Además, si descargas una variante `-mlx` o `gemma4:e4b`, puedes crear el alias directo con `ollama cp`.
 
 ---
 
@@ -142,12 +147,20 @@ Descarga los modelos recomendados:
 # Modelo principal de razonamiento y código
 ollama pull hermes3:8b
 
-# Modelo para el analista (o usa qwen2.5-coder o gemma3)
-ollama pull gemma3:4b
-ollama cp gemma3:4b gemma:e4b
+# Modelo para el analista de negocios (Gemma 4):
+ollama pull gemma4:e4b
+ollama cp gemma4:e4b gemma:e4b
+
+# O para equipos de 8 GB de RAM (modelo ligero):
+ollama pull gemma4:e2b
+ollama cp gemma4:e2b gemma:e4b
+
+# En Apple Silicon (M1-M6) para optimización extrema de memoria/batería:
+# ollama pull gemma4:e4b-mlx && ollama cp gemma4:e4b-mlx gemma:e4b
+# ollama pull gemma4:e2b-mlx && ollama cp gemma4:e2b-mlx gemma:e4b
 ```
 
-*(Si tu máquina cuenta con 8 GB de RAM o menos, puedes utilizar modelos más ligeros como `ollama pull qwen2.5-coder:3b` o `ollama pull llama3.2:3b`).*
+*(Si prefieres Qwen o Llama en equipos con 8 GB de RAM o menos, también puedes usar `ollama pull qwen2.5-coder:3b` o `ollama pull llama3.2:3b`).*
 
 ---
 
