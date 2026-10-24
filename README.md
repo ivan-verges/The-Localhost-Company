@@ -33,28 +33,28 @@ Una startup de software completa (CEO, Business Analyst, Full-Stack Developer y 
 
 ```mermaid
 flowchart TD
-    Board["🧑‍💼 Junta Directiva (Humano / Dashboard)"] -->|POST /api/board/directive| CEO["👔 CEO Agent (Paperclip HQ)\n:3000 | hermes3:8b"]
+    Board["Junta Directiva (Humano / Dashboard)"] -->|"POST /api/board/directive"| CEO["CEO Agent (Paperclip HQ)<br/>:3000 | hermes3:8b"]
     
     subgraph Localhost ["Red de Contenedores Locales (Docker / Podman)"]
-        CEO -->|1. Delegar Requerimiento| Analyst["📋 Business Analyst (OpenClaw)\n:4000 | gemma:e4b"]
-        Analyst -->|Genera /workspace/SPEC.md| Workspace[("📁 /workspace\n(Git Repo Local)")]
+        CEO -->|"1. Delegar Requerimiento"| Analyst["Business Analyst (OpenClaw)<br/>:4000 | gemma:e4b"]
+        Analyst -->|"Genera /workspace/SPEC.md"| Workspace[("workspace<br/>(Git Repo Local)")]
         
-        CEO -->|2. Asignar Tarea| Dev["💻 Developer Agent (Hermes Agent)\n:8080 (App) / :8000 (API) | hermes3:8b"]
-        Dev -->|Escribe código & commits| Workspace
-        Dev -->|Compila habilidades| Skills[("🧠 /skills\n(Memoria Procedimental)")]
+        CEO -->|"2. Asignar Tarea"| Dev["Developer Agent (Hermes Agent)<br/>:8080 (App) / :8000 (API) | hermes3:8b"]
+        Dev -->|"Escribe codigo & commits"| Workspace
+        Dev -->|"Compila habilidades"| Skills[("skills<br/>(Memoria Procedimental)")]
         
-        CEO -->|3. Ordenar Pruebas E2E| QA["🔍 QA Agent (Hermes Agent)\n:8000 (API) | hermes3:8b"]
-        QA -->|Controla Navegador| MCP["🌐 Playwright MCP\n:8931 (Headless Chromium)"]
-        MCP -->|Inspecciona DOM y test-ids| Dev
+        CEO -->|"3. Ordenar Pruebas E2E"| QA["QA Agent (Hermes Agent)<br/>:8000 (API) | hermes3:8b"]
+        QA -->|"Controla Navegador"| MCP["Playwright MCP<br/>:8931 (Headless Chromium)"]
+        MCP -->|"Inspecciona DOM y test-ids"| Dev
         
-        QA -->|STATUS: TEST_FAILED\n(Stack Trace)| CEO
-        CEO -.->|4. Rebote Autónomo / Fix Loop (Máx 3)| Dev
-        QA -->|STATUS: TEST_PASSED| CEO
+        QA -->|"STATUS: TEST_FAILED (Stack Trace)"| CEO
+        CEO -.->|"4. Rebote Autonomo / Fix Loop (Max 3)"| Dev
+        QA -->|"STATUS: TEST_PASSED"| CEO
     end
     
-    CEO -->|5. Solicitar BOARD_SIGN_OFF| Board
+    CEO -->|"5. Solicitar BOARD_SIGN_OFF"| Board
     
-    Ollama[("🦙 Ollama Host\n:11434 (Modelos Locales)")] -.-> CEO
+    Ollama[("Ollama Host<br/>:11434 (Modelos Locales)")] -.-> CEO
     Ollama -.-> Analyst
     Ollama -.-> Dev
     Ollama -.-> QA
